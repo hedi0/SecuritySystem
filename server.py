@@ -10,7 +10,8 @@ from datetime import datetime
 import time
 
 app = Flask(__name__)
-CORS(app)
+#CORS(app)
+CORS(app, resources={r"/*": {"origins": ["http://localhost", "http://your-ip"]}})
 
 KNOWN_FACES_DIR = "known_faces"
 INTRUDERS_DIR = "intruders"
