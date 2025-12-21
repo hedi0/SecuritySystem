@@ -1,0 +1,15 @@
+ESP32-CAM Pinout Reference:            https://randomnerdtutorials.com/esp32-cam-pinout-gpio/
+
+Firebase Setup Guide:                  https://firebase.google.com/docs
+
+Flutter Firebase Tutorial:             https://flutter.dev/docs/development/data-and-backend/firebase
+
+Face Recognition with Python:          https://face-recognition.readthedocs.io/
+
+Arduino Basics:                        https://www.arduino.cc/en/Guide
+
+Servo Tutorial:                        https://www.arduino.cc/en/Tutorial/Sweep
+
+Face Recognition:                      https://github.com/espressif/esp-face
+
+Power Management:                      https://randomnerdtutorials.com/esp32-deep-sleep-arduino-ide/
