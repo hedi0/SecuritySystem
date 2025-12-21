@@ -11,6 +11,7 @@ import time
 
 app = Flask(__name__)
 #CORS(app)
+#if it didn't work uncomment #CORS(app) and remove the line below
 CORS(app, resources={r"/*": {"origins": ["http://localhost", "http://your-ip"]}})
 
 KNOWN_FACES_DIR = "known_faces"
