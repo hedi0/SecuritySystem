@@ -173,7 +173,7 @@ This project is currently **Unlicensed**.
 
 This means that by default, standard copyright law applies, and you do not have explicit permission from the copyright holder (hedi0) to reproduce, distribute, or create derivative works from this project. It is advisable to contact the main contributor for clarification on usage permissions.
 
-© 2023 hedi0. All rights reserved.
+© 2025 hedi0. All rights reserved.
 
 ---
 [preview-image]: /preview_example.png "SecuritySystem Dashboard Preview"
