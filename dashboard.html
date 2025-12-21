@@ -1,0 +1,868 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ESP32-CAM Security Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --success-color: #2ecc71;
+            --danger-color: #e74c3c;
+            --warning-color: #f39c12;
+            --info-color: #1abc9c;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        .dashboard-container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 20px;
+            margin-top: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+        
+        .dashboard-header {
+            background: linear-gradient(135deg, var(--primary-color), #1a2530);
+            color: white;
+            padding: 1.5rem;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .status-card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            transition: transform 0.3s;
+            border-left: 4px solid var(--secondary-color);
+            height: 100%;
+        }
+        
+        .status-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        }
+        
+        .status-card.success { border-left-color: var(--success-color); }
+        .status-card.danger { border-left-color: var(--danger-color); }
+        .status-card.warning { border-left-color: var(--warning-color); }
+        .status-card.info { border-left-color: var(--info-color); }
+        
+        .stat-icon {
+            font-size: 2.5rem;
+            opacity: 0.8;
+        }
+        
+        .stat-value {
+            font-size: 2rem;
+            font-weight: bold;
+        }
+        
+        .stat-label {
+            font-size: 0.9rem;
+            color: #6c757d;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .online-status {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 8px;
+            animation: pulse 2s infinite;
+        }
+        
+        .online { background-color: var(--success-color); }
+        .offline { background-color: var(--danger-color); }
+        
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+        
+        .chart-container {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .event-log {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .event-item {
+            padding: 10px 15px;
+            border-bottom: 1px solid #eee;
+            transition: background-color 0.2s;
+        }
+        
+        .event-item:hover {
+            background-color: #f8f9fa;
+        }
+        
+        .event-time {
+            font-size: 0.8rem;
+            color: #6c757d;
+        }
+        
+        .event-message {
+            font-weight: 500;
+        }
+        
+        .refresh-btn {
+            cursor: pointer;
+            transition: transform 0.3s;
+        }
+        
+        .refresh-btn:hover {
+            transform: rotate(180deg);
+        }
+        
+        .badge-pulse {
+            animation: pulse 1s infinite;
+        }
+        
+        .value-change {
+            animation: highlight 1s;
+        }
+        
+        @keyframes highlight {
+            0% { background-color: yellow; }
+            100% { background-color: transparent; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="dashboard-header text-center">
+            <h1 class="mb-2"><i class="fas fa-shield-alt me-2"></i>Security System</h1>
+            <p class="mb-0 opacity-75">Real-time Sensor Monitoring Dashboard</p>
+            <div class="mt-3">
+                <span id="connectionStatus" class="badge bg-success">
+                    <span class="online-status online"></span> CONNECTED
+                </span>
+                <span class="badge bg-primary ms-2" id="lastUpdateTime">--:--:--</span>
+            </div>
+        </div>
+
+        <div class="dashboard-container">
+            <!-- Current Sensor Values -->
+            <div class="row mb-4">
+                <div class="col-md-3">
+                    <div class="status-card info">
+                        <div class="row align-items-center">
+                            <div class="col-4 text-center">
+                                <i class="fas fa-ruler-vertical stat-icon text-info"></i>
+                            </div>
+                            <div class="col-8">
+                                <div class="stat-value" id="distanceValue">--</div>
+                                <div class="stat-label">Distance (cm)</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="status-card warning">
+                        <div class="row align-items-center">
+                            <div class="col-4 text-center">
+                                <i class="fas fa-bell stat-icon text-warning"></i>
+                            </div>
+                            <div class="col-8">
+                                <div class="stat-value" id="vibrationStatus">NO</div>
+                                <div class="stat-label">Vibration</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="status-card">
+                        <div class="row align-items-center">
+                            <div class="col-4 text-center">
+                                <i class="fas fa-door-open stat-icon text-primary"></i>
+                            </div>
+                            <div class="col-8">
+                                <div class="stat-value" id="doorStatus">CLOSED</div>
+                                <div class="stat-label">Door Status</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="status-card success">
+                        <div class="row align-items-center">
+                            <div class="col-4 text-center">
+                                <i class="fas fa-wifi stat-icon text-success"></i>
+                            </div>
+                            <div class="col-8">
+                                <div class="stat-value" id="wifiStrength">--</div>
+                                <div class="stat-label">WiFi Signal</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Face Recognition & System Status -->
+            <div class="row mb-4">
+                <div class="col-md-4">
+                    <div class="chart-container">
+                        <h5><i class="fas fa-user-check me-2"></i>Face Recognition</h5>
+                        <div class="text-center py-4">
+                            <div class="display-4 mb-2" id="currentFace">--</div>
+                            <div class="text-muted">Current Person</div>
+                            <div class="mt-3">
+                                <small class="text-muted">Face Detected: <span id="faceDetected">No</span></small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="chart-container">
+                        <h5><i class="fas fa-camera me-2"></i>Camera Status</h5>
+                        <div class="text-center py-4">
+                            <div class="display-4 mb-2" id="cameraAngle">0°</div>
+                            <div class="text-muted">Pan Position</div>
+                            <div class="mt-3">
+                                <div class="progress" style="height: 10px;">
+                                    <div id="systemActiveBar" class="progress-bar bg-success" style="width: 0%"></div>
+                                </div>
+                                <small class="text-muted">System: <span id="systemStatus">INACTIVE</span></small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="chart-container">
+                        <h5><i class="fas fa-chart-bar me-2"></i>Statistics</h5>
+                        <div class="py-3">
+                            <div class="row mb-2">
+                                <div class="col-6">
+                                    <small class="text-muted">Today's Alerts</small>
+                                    <div class="h4" id="alertsToday">0</div>
+                                </div>
+                                <div class="col-6">
+                                    <small class="text-muted">Access Granted</small>
+                                    <div class="h4 text-success" id="accessGranted">0</div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-6">
+                                    <small class="text-muted">Intruders</small>
+                                    <div class="h4 text-danger" id="intrudersCount">0</div>
+                                </div>
+                                <div class="col-6">
+                                    <small class="text-muted">Events</small>
+                                    <div class="h4" id="totalEvents">0</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Charts -->
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <div class="chart-container">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h5 class="mb-0"><i class="fas fa-chart-line me-2"></i>Distance History</h5>
+                            <button class="btn btn-sm btn-outline-primary" onclick="refreshDistanceChart()">
+                                <i class="fas fa-sync-alt"></i>
+                            </button>
+                        </div>
+                        <canvas id="distanceChart"></canvas>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="chart-container">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h5 class="mb-0"><i class="fas fa-chart-pie me-2"></i>Event Distribution</h5>
+                            <button class="btn btn-sm btn-outline-primary" onclick="refreshEventChart()">
+                                <i class="fas fa-sync-alt"></i>
+                            </button>
+                        </div>
+                        <canvas id="eventChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Event Log -->
+            <div class="row">
+                <div class="col-12">
+                    <div class="chart-container">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h5 class="mb-0"><i class="fas fa-history me-2"></i>Recent Events</h5>
+                            <div>
+                                <span class="badge bg-primary me-2">Device: <span id="deviceId">ESP32_CAM</span></span>
+                                <button class="btn btn-sm btn-outline-primary" onclick="refreshEvents()">
+                                    <i class="fas fa-sync-alt"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="event-log" id="eventLog">
+                            <div class="text-center py-4">
+                                <i class="fas fa-spinner fa-spin"></i> Loading events...
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- System Info -->
+            <div class="row mt-4">
+                <div class="col-12">
+                    <div class="alert alert-info">
+                        <div class="row">
+                            <div class="col-md-3">
+                                <small class="text-muted">Device IP</small>
+                                <div class="fw-bold" id="deviceIp">0.0.0.0</div>
+                            </div>
+                            <div class="col-md-3">
+                                <small class="text-muted">Uptime</small>
+                                <div class="fw-bold" id="systemUptime">0s</div>
+                            </div>
+                            <div class="col-md-3">
+                                <small class="text-muted">Last Update</small>
+                                <div class="fw-bold" id="lastDataTime">Never</div>
+                            </div>
+                            <div class="col-md-3">
+                                <small class="text-muted">Connection</small>
+                                <div class="fw-bold">
+                                    <span id="firebaseStatus" class="badge bg-success">Connected</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/12.6.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/12.6.0/firebase-database-compat.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        // Your Firebase configuration
+        const firebaseConfig = {
+            apiKey: "Paste Your API Key Here",
+            authDomain: "",
+            databaseURL: "",
+            projectId: "",
+            storageBucket: "",
+            messagingSenderId: "",
+            appId: "",
+            measurementId: ""
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+
+        // Variables
+        let deviceId = "ESP32_CAM";
+        let distanceChart;
+        let eventChart;
+        let events = [];
+        let distanceHistory = [];
+        let eventCounts = { motion: 0, face: 0, vibration: 0, door: 0 };
+        let lastDistanceValue = null;
+
+        // Initialize charts
+        function initCharts() {
+            // Distance Chart
+            const distanceCtx = document.getElementById('distanceChart').getContext('2d');
+            distanceChart = new Chart(distanceCtx, {
+                type: 'line',
+                data: {
+                    labels: Array(20).fill(''),
+                    datasets: [{
+                        label: 'Distance (cm)',
+                        data: Array(20).fill(0),
+                        borderColor: 'rgb(54, 162, 235)',
+                        backgroundColor: 'rgba(54, 162, 235, 0.1)',
+                        tension: 0.4,
+                        fill: true,
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    animation: {
+                        duration: 0 // Disable animation for real-time updates
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Distance (cm)'
+                            }
+                        },
+                        x: {
+                            display: false
+                        }
+                    }
+                }
+            });
+
+            // Event Chart
+            const eventCtx = document.getElementById('eventChart').getContext('2d');
+            eventChart = new Chart(eventCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Motion', 'Face', 'Vibration', 'Door'],
+                    datasets: [{
+                        data: [0, 0, 0, 0],
+                        backgroundColor: [
+                            'rgb(255, 159, 64)',
+                            'rgb(54, 162, 235)',
+                            'rgb(75, 192, 192)',
+                            'rgb(153, 102, 255)'
+                        ],
+                        borderWidth: 2,
+                        borderColor: 'white'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+        }
+
+        // Update distance chart
+        function updateDistanceChart(distance) {
+            if (!distanceChart) return;
+            
+            distanceHistory.push(distance);
+            if (distanceHistory.length > 20) {
+                distanceHistory.shift();
+            }
+            
+            distanceChart.data.datasets[0].data = distanceHistory;
+            distanceChart.update('none'); // 'none' for no animation
+        }
+
+        // Update event chart
+        function updateEventChart() {
+            if (!eventChart) return;
+            
+            eventChart.data.datasets[0].data = [
+                eventCounts.motion,
+                eventCounts.face,
+                eventCounts.vibration,
+                eventCounts.door
+            ];
+            eventChart.update();
+        }
+
+        // Update statistics
+        function updateStatistics(eventType, faceName = null) {
+            // Update event counts
+            if (eventCounts[eventType] !== undefined) {
+                eventCounts[eventType]++;
+                updateEventChart();
+            }
+            
+            // Update alerts count
+            if (eventType === 'vibration') {
+                const alerts = document.getElementById('alertsToday');
+                alerts.textContent = parseInt(alerts.textContent || 0) + 1;
+                alerts.classList.add('badge-pulse');
+                setTimeout(() => alerts.classList.remove('badge-pulse'), 1000);
+            }
+            
+            // Update access granted
+            if (eventType === 'face' && faceName !== 'Intruder' && faceName !== 'Unknown') {
+                const access = document.getElementById('accessGranted');
+                access.textContent = parseInt(access.textContent || 0) + 1;
+            }
+            
+            // Update intruders
+            if (eventType === 'face' && faceName === 'Intruder') {
+                const intruders = document.getElementById('intrudersCount');
+                intruders.textContent = parseInt(intruders.textContent || 0) + 1;
+            }
+            
+            // Update total events
+            const totalEvents = document.getElementById('totalEvents');
+            totalEvents.textContent = parseInt(totalEvents.textContent || 0) + 1;
+        }
+
+        // Add event to log
+        function addEventToLog(event) {
+            const eventLog = document.getElementById('eventLog');
+            
+            // Remove loading message if present
+            if (eventLog.innerHTML.includes('fa-spinner')) {
+                eventLog.innerHTML = '';
+            }
+            
+            const eventItem = document.createElement('div');
+            eventItem.className = 'event-item';
+            
+            const time = new Date(event.timestamp || Date.now());
+            let icon = 'fa-info-circle';
+            let colorClass = 'text-primary';
+            let eventText = event.event_type || 'info';
+            
+            switch(event.event_type) {
+                case 'motion':
+                    icon = 'fa-running';
+                    colorClass = 'text-warning';
+                    eventText = `Motion detected (${event.distance} cm)`;
+                    break;
+                case 'face':
+                    icon = 'fa-user';
+                    colorClass = event.face_name === 'Intruder' ? 'text-danger' : 'text-success';
+                    eventText = `Face: ${event.face_name}`;
+                    break;
+                case 'vibration':
+                    icon = 'fa-bell';
+                    colorClass = 'text-danger';
+                    eventText = 'Vibration detected!';
+                    break;
+                case 'door':
+                    icon = 'fa-door-open';
+                    colorClass = 'text-info';
+                    eventText = `Door ${event.door_open ? 'OPENED' : 'CLOSED'}`;
+                    break;
+            }
+            
+            eventItem.innerHTML = `
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <i class="fas ${icon} ${colorClass} me-2"></i>
+                        <span class="event-message">${eventText}</span>
+                    </div>
+                    <div class="event-time">${time.toLocaleTimeString()}</div>
+                </div>
+            `;
+            
+            // Add to top
+            eventLog.insertBefore(eventItem, eventLog.firstChild);
+            
+            // Limit to 20 events
+            if (eventLog.children.length > 20) {
+                eventLog.removeChild(eventLog.lastChild);
+            }
+        }
+
+        // Update sensor values display
+        function updateSensorDisplay(data) {
+            // Update distance
+            if (data.distance !== undefined) {
+                const distanceElement = document.getElementById('distanceValue');
+                const distance = parseFloat(data.distance).toFixed(1);
+                
+                // Highlight if value changed
+                if (lastDistanceValue !== null && Math.abs(lastDistanceValue - distance) > 0.5) {
+                    distanceElement.classList.add('value-change');
+                    setTimeout(() => distanceElement.classList.remove('value-change'), 1000);
+                }
+                
+                distanceElement.textContent = distance;
+                lastDistanceValue = distance;
+                
+                // Update distance chart
+                updateDistanceChart(parseFloat(distance));
+            }
+            
+            // Update vibration
+            if (data.vibration !== undefined) {
+                const vibrationElement = document.getElementById('vibrationStatus');
+                vibrationElement.textContent = data.vibration ? 'YES' : 'NO';
+                vibrationElement.className = data.vibration ? 'stat-value text-danger' : 'stat-value text-success';
+                
+                // Pulse animation for vibration
+                if (data.vibration) {
+                    vibrationElement.classList.add('badge-pulse');
+                    setTimeout(() => vibrationElement.classList.remove('badge-pulse'), 2000);
+                }
+            }
+            
+            // Update door status
+            if (data.door_open !== undefined) {
+                const doorElement = document.getElementById('doorStatus');
+                doorElement.textContent = data.door_open ? 'OPEN' : 'CLOSED';
+                doorElement.className = data.door_open ? 'stat-value text-danger' : 'stat-value text-success';
+            }
+            
+            // Update WiFi strength
+            if (data.wifi_strength !== undefined) {
+                const wifiElement = document.getElementById('wifiStrength');
+                wifiElement.textContent = `${data.wifi_strength} dBm`;
+                
+                // Color based on signal strength
+                if (data.wifi_strength >= -50) {
+                    wifiElement.className = 'stat-value text-success';
+                } else if (data.wifi_strength >= -70) {
+                    wifiElement.className = 'stat-value text-warning';
+                } else {
+                    wifiElement.className = 'stat-value text-danger';
+                }
+            }
+            
+            // Update face recognition
+            if (data.face_name !== undefined) {
+                const faceElement = document.getElementById('currentFace');
+                faceElement.textContent = data.face_name;
+                faceElement.className = data.face_name === 'Intruder' ? 
+                    'display-4 text-danger' : 'display-4 text-success';
+            }
+            
+            // Update face detected
+            if (data.face_detected !== undefined) {
+                document.getElementById('faceDetected').textContent = data.face_detected ? 'Yes' : 'No';
+            }
+            
+            // Update camera angle
+            if (data.camera_angle !== undefined) {
+                document.getElementById('cameraAngle').textContent = `${data.camera_angle}°`;
+            }
+            
+            // Update system status
+            if (data.system_active !== undefined) {
+                const systemElement = document.getElementById('systemStatus');
+                const barElement = document.getElementById('systemActiveBar');
+                
+                if (data.system_active) {
+                    systemElement.textContent = 'ACTIVE';
+                    systemElement.className = 'text-danger';
+                    barElement.className = 'progress-bar bg-danger';
+                    barElement.style.width = '100%';
+                } else {
+                    systemElement.textContent = 'INACTIVE';
+                    systemElement.className = 'text-success';
+                    barElement.className = 'progress-bar bg-success';
+                    barElement.style.width = '0%';
+                }
+            }
+            
+            // Update IP address
+            if (data.ip_address !== undefined) {
+                document.getElementById('deviceIp').textContent = data.ip_address;
+            }
+            
+            // Update timestamp
+            const now = new Date();
+            document.getElementById('lastUpdateTime').textContent = now.toLocaleTimeString();
+            document.getElementById('lastDataTime').textContent = now.toLocaleString();
+        }
+
+        // Listen to Firebase Realtime Database
+        function setupFirebaseListeners() {
+            // Listen for latest data
+            const latestRef = database.ref(`devices/${deviceId}/latest`);
+            latestRef.on('value', (snapshot) => {
+                if (snapshot.exists()) {
+                    const data = snapshot.val();
+                    console.log('Latest data:', data);
+                    
+                    // Update display
+                    updateSensorDisplay(data);
+                    
+                    // Update statistics if it's an event
+                    if (data.event_type) {
+                        updateStatistics(data.event_type, data.face_name);
+                        addEventToLog(data);
+                    }
+                    
+                    // Update connection status
+                    document.getElementById('connectionStatus').innerHTML = 
+                        '<span class="online-status online"></span> LIVE';
+                    document.getElementById('firebaseStatus').className = 'badge bg-success';
+                    document.getElementById('firebaseStatus').textContent = 'Live';
+                }
+            });
+            
+            // Listen for device status
+            const statusRef = database.ref(`devices/${deviceId}/status`);
+            statusRef.on('value', (snapshot) => {
+                if (snapshot.exists()) {
+                    const status = snapshot.val();
+                    
+                    // Update online status
+                    const onlineStatus = document.getElementById('connectionStatus');
+                    if (status.online) {
+                        onlineStatus.innerHTML = '<span class="online-status online"></span> ONLINE';
+                        onlineStatus.className = 'badge bg-success';
+                    } else {
+                        onlineStatus.innerHTML = '<span class="online-status offline"></span> OFFLINE';
+                        onlineStatus.className = 'badge bg-danger';
+                    }
+                    
+                    // Update uptime
+                    if (status.uptime) {
+                        const hours = Math.floor(status.uptime / 3600);
+                        const minutes = Math.floor((status.uptime % 3600) / 60);
+                        const seconds = status.uptime % 60;
+                        document.getElementById('systemUptime').textContent = 
+                            `${hours}h ${minutes}m ${seconds}s`;
+                    }
+                }
+            });
+            
+            // Listen for sensor data events
+            const sensorRef = database.ref('sensor_data');
+            sensorRef.limitToLast(20).on('value', (snapshot) => {
+                if (snapshot.exists()) {
+                    const sensorData = snapshot.val();
+                    const eventsArray = Object.values(sensorData).reverse();
+                    
+                    // Update event log with latest events
+                    const eventLog = document.getElementById('eventLog');
+                    eventLog.innerHTML = '';
+                    
+                    eventsArray.forEach(event => {
+                        addEventToLog(event);
+                    });
+                }
+            });
+            
+            // Listen for statistics
+            const statsRef = database.ref(`statistics/${deviceId}`);
+            statsRef.on('value', (snapshot) => {
+                if (snapshot.exists()) {
+                    const stats = snapshot.val();
+                    
+                    if (stats.total_events) {
+                        document.getElementById('totalEvents').textContent = stats.total_events;
+                    }
+                    if (stats.access_granted) {
+                        document.getElementById('accessGranted').textContent = stats.access_granted;
+                    }
+                    if (stats.intruders) {
+                        document.getElementById('intrudersCount').textContent = stats.intruders;
+                    }
+                    if (stats.motion_events) {
+                        eventCounts.motion = stats.motion_events;
+                    }
+                    if (stats.vibration_events) {
+                        eventCounts.vibration = stats.vibration_events;
+                        document.getElementById('alertsToday').textContent = stats.vibration_events;
+                    }
+                    if (stats.face_detections) {
+                        eventCounts.face = stats.face_detections;
+                    }
+                    if (stats.door_opens) {
+                        eventCounts.door = stats.door_opens;
+                    }
+                    
+                    updateEventChart();
+                }
+            });
+        }
+
+        // Refresh functions
+        function refreshDistanceChart() {
+            const distanceHistoryRef = database.ref(`history/${deviceId}`).limitToLast(20);
+            distanceHistoryRef.once('value').then((snapshot) => {
+                if (snapshot.exists()) {
+                    const history = snapshot.val();
+                    distanceHistory = [];
+                    
+                    Object.values(history).forEach(item => {
+                        if (item.distance) {
+                            distanceHistory.push(parseFloat(item.distance));
+                        }
+                    });
+                    
+                    updateDistanceChart();
+                }
+            });
+        }
+
+        function refreshEventChart() {
+            const statsRef = database.ref(`statistics/${deviceId}`);
+            statsRef.once('value').then((snapshot) => {
+                if (snapshot.exists()) {
+                    const stats = snapshot.val();
+                    
+                    eventCounts.motion = stats.motion_events || 0;
+                    eventCounts.vibration = stats.vibration_events || 0;
+                    eventCounts.face = stats.face_detections || 0;
+                    eventCounts.door = stats.door_opens || 0;
+                    
+                    updateEventChart();
+                }
+            });
+        }
+
+        function refreshEvents() {
+            const sensorRef = database.ref('sensor_data').limitToLast(20);
+            sensorRef.once('value').then((snapshot) => {
+                if (snapshot.exists()) {
+                    const sensorData = snapshot.val();
+                    const eventsArray = Object.values(sensorData).reverse();
+                    
+                    const eventLog = document.getElementById('eventLog');
+                    eventLog.innerHTML = '';
+                    
+                    eventsArray.forEach(event => {
+                        addEventToLog(event);
+                    });
+                }
+            });
+        }
+
+        // Initialize everything
+        document.addEventListener('DOMContentLoaded', function() {
+            initCharts();
+            setupFirebaseListeners();
+            
+            // Set device ID
+            document.getElementById('deviceId').textContent = deviceId;
+            
+            // Update time every second
+            setInterval(() => {
+                const now = new Date();
+                document.getElementById('lastUpdateTime').textContent = now.toLocaleTimeString();
+            }, 1000);
+            
+            // Check Firebase connection
+            database.ref('.info/connected').on('value', (snapshot) => {
+                if (snapshot.val() === true) {
+                    console.log('Connected to Firebase');
+                    document.getElementById('firebaseStatus').className = 'badge bg-success';
+                    document.getElementById('firebaseStatus').textContent = 'Connected';
+                } else {
+                    console.log('Disconnected from Firebase');
+                    document.getElementById('firebaseStatus').className = 'badge bg-danger';
+                    document.getElementById('firebaseStatus').textContent = 'Disconnected';
+                }
+            });
+        });
+    </script>
+</body>
+</html>
