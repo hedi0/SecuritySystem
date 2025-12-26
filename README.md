@@ -7,7 +7,7 @@ A robust, multi-platform security system integrating hardware communication, a P
 ![Stars](https://img.shields.io/github/stars/hedi0/SecuritySystem?style=social)
 ![Forks](https://img.shields.io/github/forks/hedi0/SecuritySystem?style=social)
 
-![example-preview-image](/preview_example.png)
+![example-preview-image](/sec_cover.png)
 
 ---
 
