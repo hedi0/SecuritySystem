@@ -108,4 +108,4 @@ flutter run
 
 ## ⚖️ License
 
-**Unlicensed** – contact author for 
+**Unlicensed** – contact au
