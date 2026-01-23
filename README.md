@@ -102,7 +102,4 @@ flutter run
 
 - Fork repo → create feature/bugfix branch → commit → PR to `main`  
 - Follow **PEP8** (Python), **Effective Dart** (Flutter), clean HTML/CSS  
-- Include tests & ensure existing tests pass
-
----
-
+- Include tests & ensure existing tests 
