@@ -109,4 +109,4 @@ flutter run
 ## ⚖️ License
 
 **Unlicensed** – contact author for usage permissions.  
-© 2025 hedi
+© 20
