@@ -108,5 +108,4 @@ flutter run
 
 ## ⚖️ License
 
-**Unlicensed** – contact author for usage permissions.  
-© 20
+**Unlicensed** – contact author for usage permissio
