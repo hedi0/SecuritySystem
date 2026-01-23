@@ -101,4 +101,4 @@ flutter run
 ## 🤝 Contribution Guidelines
 
 - Fork repo → create feature/bugfix branch → commit → PR to `main`  
-- Follow **PEP8** (Python), **Effective D
+- Follow **PEP8** (Python),
