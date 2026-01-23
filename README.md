@@ -106,6 +106,4 @@ flutter run
 
 ---
 
-## ⚖️ License
-
-**
+## ⚖️ Licen
