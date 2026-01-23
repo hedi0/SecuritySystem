@@ -108,4 +108,4 @@ flutter run
 
 ## ⚖️ License
 
-**Unlicensed** – co
+**Unlicens
