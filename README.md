@@ -100,4 +100,4 @@ flutter run
 
 ## 🤝 Contribution Guidelines
 
-- Fork repo → create feature/bugfix branch → commit → PR to `main
+- Fork repo → create feature/bugfix branch → commit → PR 
