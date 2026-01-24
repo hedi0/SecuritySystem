@@ -100,4 +100,4 @@ flutter run
 
 ## 🤝 Contribution Guidelines
 
-- Fork repo → create feature/bugfix branc
+- Fork repo → create feature/bugfi
