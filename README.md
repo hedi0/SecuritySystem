@@ -65,7 +65,7 @@ flutter run
 
 - Open: `http://localhost:5000/dashboard.html`
 
-> ⚠️ Make sure Proteus or your hardware simulation is running to emulate the connected devices before starting the Pyt
+> ⚠️ Make sure Proteus or your hardware simulation is running to emulate the connected devices before star
 
 ---
 
