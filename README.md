@@ -95,7 +95,3 @@ flutter run
 - **v1.2:** Support additional sensors (motion, temperature, smoke)  
 - **v1.3:** AI/ML anomaly detection  
 - **Future:** Third-party API integration, UI/UX enhancements
-
----
-
-#
