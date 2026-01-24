@@ -98,6 +98,4 @@ flutter run
 
 ---
 
-## 🤝 Contribution Guidelines
-
-- Fork r
+## 🤝 Contribution Guideline
