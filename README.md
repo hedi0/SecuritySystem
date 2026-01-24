@@ -100,4 +100,4 @@ flutter run
 
 ## 🤝 Contribution Guidelines
 
-- Fork repo → creat
+- Fork repo → 
