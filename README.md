@@ -65,7 +65,7 @@ flutter run
 
 - Open: `http://localhost:5000/dashboard.html`
 
-> ⚠️ Make sure Pr
+> ⚠️ Mak
 
 ---
 
