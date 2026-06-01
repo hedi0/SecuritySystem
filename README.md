@@ -107,8 +107,7 @@ flutter run
 
 d:** Real-time overview of all devices and alerts.
 - 🔗 **Haare gration:** Com
-- ⚡ **Real-Time Alerts:** Instant notificati
-
+- ⚡ **Real-Time Alerts:** In
 
 
 
