@@ -106,8 +106,8 @@ flutter run
 
 
 d:** Real-time overview of all devices and alerts.
-- 🔗 **Hardware Integration:** Communicate with components serial driver.
-- ⚡ **Real-Time Alerts:** Instant notifications
+- 🔗 **Hardware Integration:** Communicatonents serial driver.
+- ⚡ **Real-Time Alerts:** Instant notificati
 
 
 
