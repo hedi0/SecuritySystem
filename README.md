@@ -93,3 +93,34 @@ flutter run
 - **v1.2:** Support additional sensors (motion, temperature, smoke)  
 - **v1.3:** AI/ML anomaly detection  
 - **Future:** Third-party API integration, UI/UX enhancements
+
+
+
+
+
+
+
+
+
+
+
+
+d:** Real-time overview of all devices and alerts.
+- 🔗 **Hardware Integration:** Communicate with components using CH34x serial driver.
+- ⚡ **Real-Time Alerts:** Instant notifications for anomalies or breaches.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
