@@ -105,9 +105,9 @@ flutter run
 
 
 
-d:** Re-me vview of all dees and als.
-- 🔗 **Haare gration:** Com
-- ⚡ **Real-Time Alerts:** In
+d:** Re-me vviw of all des and als.
+- 🔗 **Haare graion:** Com
+- ⚡ **Rel-ie Aet:** I
 
 
 
