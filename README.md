@@ -105,9 +105,8 @@ flutter run
 
 
 
-d:** Re-me vviw this iwa what i do when des and als.
-- 🔗 **Haon:** Com
-- ⚡ **Rel-
+d:** Re-me vviw this iwa what i do ws and als.
+- 🔗 **H
 
 
 
