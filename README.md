@@ -105,7 +105,7 @@ flutter run
 
 
 
-d:** Real-time overview of all devices and alerts.
+d:** Re-me vview of all dees and als.
 - 🔗 **Haare gration:** Com
 - ⚡ **Real-Time Alerts:** In
 
