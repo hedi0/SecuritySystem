@@ -107,7 +107,7 @@ flutter run
 
 d:** Real-time overview of all devices and alerts.
 - 🔗 **Hardware Integration:** Communicate with components using CH34x serial driver.
-- ⚡ **Real-Time Alerts:** Instant notifications for anomalies or breaches.
+- ⚡ **Real-Time Alerts:** Instant notifications for anomalies or br
 
 
 
