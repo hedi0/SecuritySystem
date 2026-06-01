@@ -105,9 +105,9 @@ flutter run
 
 
 
-d:** Re-me vviw of all des and als.
-- 🔗 **Haare graion:** Com
-- ⚡ **Rel-ie Aet:** I
+d:** Re-me vviw this iwa what i do when des and als.
+- 🔗 **Haon:** Com
+- ⚡ **Rel-
 
 
 
