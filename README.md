@@ -106,7 +106,7 @@ flutter run
 
 
 d:** Real-time overview of all devices and alerts.
-- 🔗 **Haare gration:** Communients serial driver.
+- 🔗 **Haare gration:** Com
 - ⚡ **Real-Time Alerts:** Instant notificati
 
 
